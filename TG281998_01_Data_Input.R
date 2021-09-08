@@ -27,7 +27,9 @@ library(readr)
 
 #Prepare ----
 rm(list = ls()) #usuniecie wszystkich elementow z pamieci podrecznej
-setwd("C:/Tomek/Tomzip/Dokumenty/Nauka/Podyplomowe_2019_DataScience/Praca_Dyplomowa/")
+setwd("C:/Users/tgusc/Documents/GitHub/CC_Taiwan_WNE/") #work directory na lapku
+#work directory na tablecie
+
 
 #Import raw data ----
 
@@ -36,7 +38,9 @@ cc_data <- read.csv("data/UCI_Credit_Card.csv")
 
 #check_vars
 
-
+table(cc_data$SEX)
+table(cc_data$EDUCATION)
+table(cc_data$MARRIAGE)//
 
 sapply(cc_data, 
        function(x) sum(x == ""))
@@ -52,11 +56,54 @@ summary(cc_data)
 table(cc_data$default.payment.next.month)
 
 
+#zamiana zmiennej celu i zmiennych kategorycznych na factory
+cc_data=cc_data %>% mutate(default.payment.next.month=as.factor(default.payment.next.month))
+cc_data=cc_data %>% mutate(SEX=as.factor(SEX))
+cc_data=cc_data %>% mutate(EDUCATION=as.factor(EDUCATION))
+cc_data=cc_data %>% mutate(MARRIAGE=as.factor(MARRIAGE))
+
+table(cc_data$SEX)
+table(cc_data$EDUCATION)
+table(cc_data$MARRIAGE)
+
+#As seen previously, some categories are mislabeled or undocumented. Before proceeding, it is time to fix it.
+#The 0 in MARRIAGE can be safely categorized as 'Other' (thus 3).
+#The 0 (undocumented), 5 and 6 (label unknown) in EDUCATION can also be put in a 'Other' cathegory (thus 4)
+
+
+
+table(cc_data$MARRIAGE)
+
+cc_data <- data.frame(cc_data)
+#PROBLEM - jak zamienic wartosc 0 na 3? 2021-09-08
+cc_data[cc_data$MARRIAGE==0] <- 3
+
+df[df==1]<-11
+
+levels(cc_data$SEX) <- c("Mężczyzna", "Kobieta")
+levels(cc_data$EDUCATION) <- c("Magister lub wyższe","Licencjat lub równoważne","Szkola średnia","Inne")
+levels(cc_data$MARRIAGE) <- c("Brak danych","Zamężna/żonaty","Kawaler/panna","Inne")
+
+table(cc_data$MARRIAGE)
+
+
 barplot(table(cc_data$default.payment.next.month), 
         col = "gold", 
         horiz = TRUE,  # wykres horyzontalny
         main = "Rozkład zmiennej zależnej w próbie - brak zapłacenia raty", # tytuł
         xlab = "liczebność") # etykieta osi x
+
+
+
+
+
+
+
+
+
+
+
+
 
 hist(cc_data$default.payment.next.month,
      main = "Histogram tygodniowej liczby godzin pracy",
