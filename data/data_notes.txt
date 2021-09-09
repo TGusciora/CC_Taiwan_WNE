@@ -1,0 +1,5 @@
+http://archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients
+https://www.kaggle.com/uciml/default-of-credit-card-clients-dataset
+
+
+https://www.kaggle.com/lucabasa/credit-card-default-a-very-pedagogical-notebook/
