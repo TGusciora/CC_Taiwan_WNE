@@ -140,16 +140,10 @@ summary(cc_data)
 
 # STATYSTYKI OPISOWE DANYCH
 # Żeby nie powielać komend, definiujemy obiekt:
-p <- ggplot(data = cc_data, aes(y = MARRIAGE, x = SEX))
+p <- ggplot(data = a, aes(y = MEDV, x = RM))
 
 # Nastęnie nanosimy zmienną nominalną CHAS:
-p + geom_point(aes(color = default.payment.next.month))
-
-ggplot() + 
-  geom_bar(data = cc_data, aes(x = MARRIAGE, fill = default.payment.next.month)) 
-
-ggplot() + 
-  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) 
+p + geom_point(aes(color = CHAS))
 
 
 
