@@ -139,24 +139,78 @@ summary(cc_data)
 
 
 # STATYSTYKI OPISOWE DANYCH
-# Żeby nie powielać komend, definiujemy obiekt:
-p <- ggplot(data = cc_data, aes(y = MARRIAGE, x = SEX))
 
-# Nastęnie nanosimy zmienną nominalną CHAS:
-p + geom_point(aes(color = default.payment.next.month))
 
 ggplot() + 
-  geom_bar(data = cc_data, aes(x = MARRIAGE, fill = default.payment.next.month)) 
+  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month))
 
 ggplot() + 
-  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) 
+  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) +
+  geom_text(aes(label=stat(SEX)), position = position_stack(vjust= 0.5), colour = "white", size = 5)
+
+#SPRAWDZIĆ JAK DODAĆ WARTOŚCI DO SŁUPKÓW, CHYBA BĘDZIE TRZEBA TWORZYĆ ODDZIELNE ZBIORY DANYCH DLA WYKRESÓW
+
+ggplot(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) +
+  geom_bar(position = "fill")
 
 
+ggplot(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) +
+  geom_bar(position = "fill") +
+  geom_text(aes(label=count), position = position_stack(vjust= 0.5), colour = "white", size = 5)
 
 
+cc_data2 <- cc_data %>% 
+  arrange(SEX, desc(default.payment.next.month)) %>% 
+  group_by(SEX) %>% 
+  mutate(label_sum = cumsum(1)) 
 
 
+ggplot(data = cc_data2, aes(x = factor(SEX), y=label_sum fill = factor(default.payment.next.month))) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Płeć w próbie") +
+  xlab("Płeć") +
+  ylab("Liczebność") +
+  labs(fill = "Zmienna celu") +
+  theme_minimal() +
+  geom_text(aes(label = label_sum), position = position_stack(),
+            vjust = -.5, color = "black", size = 3.5)
 
+
+# W tym celu musimy dokonać dwie czynności:
+# 
+#   * ustalić parametr position na wartość `position_stack`,
+#   * policzyć skumulowane sumy, które będą wyświetlane na wykresie.
+
+final <- rs4 %>% 
+  arrange(Age, desc(Gender)) %>% 
+  group_by(Age) %>% 
+  mutate(label_sum = cumsum(N)) 
+
+ggplot(data = final, aes(x = factor(Age), y = N, fill = factor(Gender))) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Płeć i wiek w próbie") +
+  xlab("Wiek") +
+  ylab("Populacja") +
+  labs(fill = "Płeć") +
+  theme_minimal() +
+  geom_text(aes(label = label_sum), position = position_stack(),
+            vjust = -.5, color = "black", size = 3.5) +
+  scale_x_discrete(limits = c('17','18','19','20','21','22','23','24'))
+
+# Możemy też zostawić sumy częściowe i ustawić je w połowie słupków:
+final2 <- final %>% 
+  mutate(label_sum2 = label_sum*.5)
+
+ggplot(data = final2, aes(x = factor(Age), y = N, fill = factor(Gender))) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Płeć i wiek w próbie") +
+  xlab("Wiek") +
+  ylab("Populacja") +
+  labs(fill = "Płeć") +
+  theme_minimal() +
+  geom_label(aes(y = label_sum2, label = N), fill = 'white', position = position_stack(),
+             vjust = 0.5, color = "black", size = 3) +
+  scale_x_discrete(limits = c('17','18','19','20','21','22','23','24'))
 
 
 
