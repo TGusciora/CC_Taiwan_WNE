@@ -170,18 +170,11 @@ addmargins(test2) #procent z calej grupy
 prop.table(test2,1) # procent z wiersza
 prop.table(test2,2) # procent z kolumny
 
+test3 <- as.data.frame(round(prop.table(test2,2)*100,2))
 
-
-#Rozszerz zakres czestosci do przedziału <0,100%>
-barplot(prop.table(test2,2)*100, 
-        xlab='SEX',
-        ylab='Procent w grupie',
-        main="Procentowy udzial niesp",
-        beside=T,
-        col=c("darkblue","lightcyan"),
-        legend=rownames(test2),
-        args.legend = list(x = "topright"))
-
-### Spoko byloby dodac heatmapy np sex * education i kolor w zaleznosci od natezenia 1
-
-
+#Wykres slupkowy
+ggplot(as.data.frame(test3),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+  geom_bar(stat="identity",position="stack")+
+  geom_text(aes(label=Freq),position="stack",vjust=1)+
+  scale_fill_manual(values=c("grey60","grey80"))+
+  theme_bw()
