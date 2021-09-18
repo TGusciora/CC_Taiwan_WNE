@@ -14,7 +14,8 @@
 #install.packages("dplyr")
 #install.packages("sqldf")
 #install.packages('ggplot2')
-# install.packages('tidyverse')
+#install.packages('tidyverse')
+#install.packages('corrplot')
 #Library ----
 
 library(dplyr)
@@ -27,6 +28,7 @@ library(readr)
 library(ggplot2)
 
 library(tidyverse)
+library(corrplot)
 
 #Notes ----
 #basicStats(wzrost) #DESCRIPTIVE STATISTICS OF EACH VARIABLE 
@@ -178,3 +180,37 @@ ggplot(as.data.frame(test3),aes(x=factor(Var2),y=Freq,fill=Var1)) +
   geom_text(aes(label=Freq),position="stack",vjust=1)+
   scale_fill_manual(values=c("grey60","grey80"))+
   theme_bw()
+
+
+#KORELOGRAM - zmienne PAY i BIL_AMT skorelowane
+cc_ilosciowe <- 
+  map_lgl(cc_data, is.numeric) %>% 
+  which() %>% names()
+
+cc_korelacje <- cor(cc_data[,cc_ilosciowe],
+                                use = "pairwise.complete.obs")
+
+cc_ilosciowe_sort <- 
+  sort(cc_ilosciowe[,"default.payment.next.month"], 
+       decreasing = TRUE) %>% names()
+
+
+corrplot.mixed(cc_korelacje,
+               upper = "square",
+               lower = "number",
+               tl.col="black", # kolor etykietek (nazw zmiennych)
+               tl.pos = "lt")  # pozycja etykietek (lt = left and top)
+
+#HEATMAPA Z PROPORCJAMI - DO POPRACOWANIA
+
+test5 <- select(cc_data, c(SEX, EDUCATION ,default.payment.next.month, ID))
+
+test5=test5 %>% mutate(SEX=as.numeric(SEX))
+test5=test5 %>% mutate(EDUCATION=as.numeric(EDUCATION))
+test5=test5 %>% mutate(default.payment.next.month=as.numeric(default.payment.next.month))
+
+cc_data %>% count(SEX, EDUCATION, default.payment.next.month) -> test6
+
+test5 %>% count(SEX, EDUCATION, default.payment.next.month) -> test7
+
+heatmap(as.matrix(test7),Colv = NA, Rowv = NA, scale="n")
