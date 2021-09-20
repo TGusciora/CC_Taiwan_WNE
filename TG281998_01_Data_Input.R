@@ -16,6 +16,7 @@
 #install.packages('ggplot2')
 #install.packages('tidyverse')
 #install.packages('corrplot')
+#install.packages('caret')
 #Library ----
 
 library(dplyr)
@@ -29,6 +30,7 @@ library(ggplot2)
 
 library(tidyverse)
 library(corrplot)
+library(caret)
 
 #Notes ----
 #basicStats(wzrost) #DESCRIPTIVE STATISTICS OF EACH VARIABLE 
@@ -86,7 +88,7 @@ table(cc_data$MARRIAGE)
 
 
 #zamiana zmiennej celu i zmiennych kategorycznych na factory
-cc_data=cc_data %>% mutate(default.payment.next.month=as.factor(default.payment.next.month))
+#Wykomentowanie na rzecz logitu i korelogramu - cc_data=cc_data %>% mutate(default.payment.next.month=as.factor(default.payment.next.month))
 cc_data=cc_data %>% mutate(SEX=as.factor(SEX))
 cc_data=cc_data %>% mutate(EDUCATION=as.factor(EDUCATION))
 cc_data=cc_data %>% mutate(MARRIAGE=as.factor(MARRIAGE))
@@ -142,44 +144,73 @@ summary(cc_data)
 
 # STATYSTYKI OPISOWE DANYCH
 
-
-ggplot() + 
-  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month))
-
-ggplot() + 
-  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) +
-  geom_text(aes(label=stat(SEX)), position = position_stack(vjust= 0.5), colour = "white", size = 5)
-
-
-# rozwińmy powyższy kod o pogrupoanie danych wg stanu
-
-test1 <- data.frame(table(cc_data$SEX, cc_data$default.payment.next.month))
-
-
-ggplot(data = test1, aes(x = Var1, y=Freq, fill = Var2)) +
+#SEX
+ggplot(data = data.frame(table(cc_data$SEX, cc_data$default.payment.next.month)), aes(x = Var1, y=Freq, fill = Var2)) +
   geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
-  ggtitle("Płeć w próbie - wartości bezwzględne") +
+  ggtitle("Płeć w próbie") +
   xlab("Płeć") +
   ylab("Liczebność") +
-  labs(fill = "Zmienna celu") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
   theme_minimal() +
   geom_text(aes(label = Freq), position = position_stack(),
             vjust = -.5, color = "black", size = 3.5)
 
-
-test2 <- table(cc_data$default.payment.next.month, cc_data$SEX )
-addmargins(test2) #procent z calej grupy
-prop.table(test2,1) # procent z wiersza
-prop.table(test2,2) # procent z kolumny
-
-test3 <- as.data.frame(round(prop.table(test2,2)*100,2))
-
-#Wykres slupkowy
-ggplot(as.data.frame(test3),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+ggplot(as.data.frame(as.data.frame(round(prop.table(table(cc_data$default.payment.next.month, cc_data$SEX ),2)*100,2))),aes(x=factor(Var2),y=Freq,fill=Var1)) +
   geom_bar(stat="identity",position="stack")+
   geom_text(aes(label=Freq),position="stack",vjust=1)+
   scale_fill_manual(values=c("grey60","grey80"))+
+  ggtitle("Udział niespłaconych kredytów w podziale na płeć") +
+  xlab("Płeć") +
+  ylab("Proporcja") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
   theme_bw()
+
+
+#MARRIAGE
+
+ggplot(data = data.frame(table(cc_data$MARRIAGE, cc_data$default.payment.next.month)), aes(x = Var1, y=Freq, fill = Var2)) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Stan cywilny w próbie") +
+  xlab("Stan cywilny") +
+  ylab("Liczebność") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_minimal() +
+  geom_text(aes(label = Freq), position = position_stack(),
+            vjust = -.5, color = "black", size = 3.5)
+
+ggplot(as.data.frame(as.data.frame(round(prop.table(table(cc_data$default.payment.next.month, cc_data$MARRIAGE ),2)*100,2))),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+  geom_bar(stat="identity",position="stack")+
+  geom_text(aes(label=Freq),position="stack",vjust=1)+
+  scale_fill_manual(values=c("grey60","grey80"))+
+  ggtitle("Udział niespłaconych kredytów w podziale na stan cywilny") +
+  xlab("Stan cywilny") +
+  ylab("Proporcja") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_bw()
+
+
+#EDUCATION
+
+ggplot(data = data.frame(table(cc_data$EDUCATION, cc_data$default.payment.next.month)), aes(x = Var1, y=Freq, fill = Var2)) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Wyksztalcenie w probie") +
+  xlab("Stan cywilny") +
+  ylab("Liczebność") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_minimal() +
+  geom_text(aes(label = Freq), position = position_stack(),
+            vjust = -.5, color = "black", size = 3.5)
+
+ggplot(as.data.frame(as.data.frame(round(prop.table(table(cc_data$default.payment.next.month, cc_data$EDUCATION ),2)*100,2))),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+  geom_bar(stat="identity",position="stack")+
+  geom_text(aes(label=Freq),position="stack",vjust=1)+
+  scale_fill_manual(values=c("grey60","grey80"))+
+  ggtitle("Udział niespłaconych kredytów w podziale na wykształcenie") +
+  xlab("Wykształcenie") +
+  ylab("Proporcja") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_bw()
+
 
 
 #KORELOGRAM - zmienne PAY i BIL_AMT skorelowane
@@ -201,16 +232,64 @@ corrplot.mixed(cc_korelacje,
                tl.col="black", # kolor etykietek (nazw zmiennych)
                tl.pos = "lt")  # pozycja etykietek (lt = left and top)
 
-#HEATMAPA Z PROPORCJAMI - DO POPRACOWANIA
+#Zależności między zmiennymi
 
-test5 <- select(cc_data, c(SEX, EDUCATION ,default.payment.next.month, ID))
+sum_sex_edu <- cc_data %>%
+  group_by(SEX, EDUCATION, default.payment.next.month) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
 
-test5=test5 %>% mutate(SEX=as.numeric(SEX))
-test5=test5 %>% mutate(EDUCATION=as.numeric(EDUCATION))
-test5=test5 %>% mutate(default.payment.next.month=as.numeric(default.payment.next.month))
+sum_sex_marr <- cc_data %>%
+  group_by(SEX, MARRIAGE, default.payment.next.month) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
 
-cc_data %>% count(SEX, EDUCATION, default.payment.next.month) -> test6
+sum_marr_edu <- cc_data %>%
+  group_by(MARRIAGE, EDUCATION, default.payment.next.month) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
 
-test5 %>% count(SEX, EDUCATION, default.payment.next.month) -> test7
+#Podzial zbioru na czesc uczaca sie i testowa
 
-heatmap(as.matrix(test7),Colv = NA, Rowv = NA, scale="n")
+set.seed(1235)
+data_part <- createDataPartition(cc_data$default.payment.next.month,
+                                    p = 0.7,
+                                    list = FALSE)
+
+cc_data_train <- cc_data[data_part,]
+cc_data_test <- cc_data[-data_part,]
+
+# Liczebności utworzonych zbiorów
+
+nrow(cc_data_train)/nrow(cc_data)
+nrow(cc_data_test)/nrow(cc_data)
+
+prop.table(table(cc_data_train$default.payment.next.month))
+
+prop.table(table(cc_data_test$default.payment.next.month))
+
+
+### Wlasnosci prognostyczne? Feature engineering w R? 
+### Sprawdzenie danych pod regresje i pod inne modele
+
+zmienne_wszystkie <- c("LIMIT_BAL","AGE","BILL_AMT1","BILL_AMT2","BILL_AMT3","BILL_AMT4","BILL_AMT5","BILL_AMT5","PAY_AMT1","PAY_AMT2","PAY_AMT3","PAY_AMT4","PAY_AMT5","PAY_AMT6",
+                       "SEX","EDUCATION","MARRIAGE","PAY_0","PAY_2","PAY_3","PAY_4","PAY_5","PAY_6")
+
+zmienne_ilosciowe <- c("LIMIT_BAL","AGE","BILL_AMT1","BILL_AMT2","BILL_AMT3","BILL_AMT4","BILL_AMT5","BILL_AMT5","PAY_AMT1","PAY_AMT2","PAY_AMT3","PAY_AMT4","PAY_AMT5","PAY_AMT6")
+
+zmienne_jakosciowe <- c("SEX","EDUCATION","MARRIAGE","PAY_0","PAY_2","PAY_3","PAY_4","PAY_5","PAY_6")
+
+#MODEL LOGISTYCZNY
+
+names <- paste0("default.payment.next.month ~ ", paste0(zmienne_wszystkie, collapse = " + "))
+
+cc_data_logit1 <- lm(as.formula(names),
+              data = cc_data_train)
+
+# zobaczmy wynik
+
+summary(cc_data_logit1) # aR2 = 0.1843, model łącznie istotny (p-value F-statistic < 0.05)
+
+
+
+

@@ -142,44 +142,73 @@ summary(cc_data)
 
 # STATYSTYKI OPISOWE DANYCH
 
-
-ggplot() + 
-  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month))
-
-ggplot() + 
-  geom_bar(data = cc_data, aes(x = SEX, fill = default.payment.next.month)) +
-  geom_text(aes(label=stat(SEX)), position = position_stack(vjust= 0.5), colour = "white", size = 5)
-
-
-# rozwińmy powyższy kod o pogrupoanie danych wg stanu
-
-test1 <- data.frame(table(cc_data$SEX, cc_data$default.payment.next.month))
-
-
-ggplot(data = test1, aes(x = Var1, y=Freq, fill = Var2)) +
+#SEX
+ggplot(data = data.frame(table(cc_data$SEX, cc_data$default.payment.next.month)), aes(x = Var1, y=Freq, fill = Var2)) +
   geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
-  ggtitle("Płeć w próbie - wartości bezwzględne") +
+  ggtitle("Płeć w próbie") +
   xlab("Płeć") +
   ylab("Liczebność") +
-  labs(fill = "Zmienna celu") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
   theme_minimal() +
   geom_text(aes(label = Freq), position = position_stack(),
             vjust = -.5, color = "black", size = 3.5)
 
-
-test2 <- table(cc_data$default.payment.next.month, cc_data$SEX )
-addmargins(test2) #procent z calej grupy
-prop.table(test2,1) # procent z wiersza
-prop.table(test2,2) # procent z kolumny
-
-test3 <- as.data.frame(round(prop.table(test2,2)*100,2))
-
-#Wykres slupkowy
-ggplot(as.data.frame(test3),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+ggplot(as.data.frame(as.data.frame(round(prop.table(table(cc_data$default.payment.next.month, cc_data$SEX ),2)*100,2))),aes(x=factor(Var2),y=Freq,fill=Var1)) +
   geom_bar(stat="identity",position="stack")+
   geom_text(aes(label=Freq),position="stack",vjust=1)+
   scale_fill_manual(values=c("grey60","grey80"))+
+  ggtitle("Udział niespłaconych kredytów w podziale na płeć") +
+  xlab("Płeć") +
+  ylab("Proporcja") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
   theme_bw()
+
+
+#MARRIAGE
+
+ggplot(data = data.frame(table(cc_data$MARRIAGE, cc_data$default.payment.next.month)), aes(x = Var1, y=Freq, fill = Var2)) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Stan cywilny w próbie") +
+  xlab("Stan cywilny") +
+  ylab("Liczebność") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_minimal() +
+  geom_text(aes(label = Freq), position = position_stack(),
+            vjust = -.5, color = "black", size = 3.5)
+
+ggplot(as.data.frame(as.data.frame(round(prop.table(table(cc_data$default.payment.next.month, cc_data$MARRIAGE ),2)*100,2))),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+  geom_bar(stat="identity",position="stack")+
+  geom_text(aes(label=Freq),position="stack",vjust=1)+
+  scale_fill_manual(values=c("grey60","grey80"))+
+  ggtitle("Udział niespłaconych kredytów w podziale na stan cywilny") +
+  xlab("Stan cywilny") +
+  ylab("Proporcja") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_bw()
+
+
+#EDUCATION
+
+ggplot(data = data.frame(table(cc_data$EDUCATION, cc_data$default.payment.next.month)), aes(x = Var1, y=Freq, fill = Var2)) +
+  geom_bar(na.rm = TRUE, position = "stack", width = 0.7, stat = "identity") +
+  ggtitle("Wyksztalcenie w probie") +
+  xlab("Stan cywilny") +
+  ylab("Liczebność") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_minimal() +
+  geom_text(aes(label = Freq), position = position_stack(),
+            vjust = -.5, color = "black", size = 3.5)
+
+ggplot(as.data.frame(as.data.frame(round(prop.table(table(cc_data$default.payment.next.month, cc_data$EDUCATION ),2)*100,2))),aes(x=factor(Var2),y=Freq,fill=Var1)) +
+  geom_bar(stat="identity",position="stack")+
+  geom_text(aes(label=Freq),position="stack",vjust=1)+
+  scale_fill_manual(values=c("grey60","grey80"))+
+  ggtitle("Udział niespłaconych kredytów w podziale na wykształcenie") +
+  xlab("Wykształcenie") +
+  ylab("Proporcja") +
+  labs(fill = "Czy kredyt zostal splacony?\n0 - tak, 1 - nie") +
+  theme_bw()
+
 
 
 #KORELOGRAM - zmienne PAY i BIL_AMT skorelowane
@@ -201,16 +230,24 @@ corrplot.mixed(cc_korelacje,
                tl.col="black", # kolor etykietek (nazw zmiennych)
                tl.pos = "lt")  # pozycja etykietek (lt = left and top)
 
-#HEATMAPA Z PROPORCJAMI - DO POPRACOWANIA
+#Zależności między zmiennymi
 
-test5 <- select(cc_data, c(SEX, EDUCATION ,default.payment.next.month, ID))
+sum_sex_edu <- cc_data %>%
+  group_by(SEX, EDUCATION, default.payment.next.month) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
 
-test5=test5 %>% mutate(SEX=as.numeric(SEX))
-test5=test5 %>% mutate(EDUCATION=as.numeric(EDUCATION))
-test5=test5 %>% mutate(default.payment.next.month=as.numeric(default.payment.next.month))
+sum_sex_marr <- cc_data %>%
+  group_by(SEX, MARRIAGE, default.payment.next.month) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
 
-cc_data %>% count(SEX, EDUCATION, default.payment.next.month) -> test6
+sum_marr_edu <- cc_data %>%
+  group_by(MARRIAGE, EDUCATION, default.payment.next.month) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
 
-test5 %>% count(SEX, EDUCATION, default.payment.next.month) -> test7
 
-heatmap(as.matrix(test7),Colv = NA, Rowv = NA, scale="n")
+### Wlasnosci prognostyczne? Feature engineering w R? 
+### Sprawdzenie danych pod regresje i pod inne modele
+
