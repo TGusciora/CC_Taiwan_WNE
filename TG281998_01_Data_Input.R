@@ -17,6 +17,9 @@
 #install.packages('tidyverse')
 #install.packages('corrplot')
 #install.packages('caret')
+#install.packages('shiny')
+#install.packages("randomForest")
+#install.packages("ranger")
 #Library ----
 
 library(dplyr)
@@ -31,6 +34,8 @@ library(ggplot2)
 library(tidyverse)
 library(corrplot)
 library(caret)
+library(randomForest)
+library(ranger)
 
 #Notes ----
 #basicStats(wzrost) #DESCRIPTIVE STATISTICS OF EACH VARIABLE 
@@ -38,7 +43,7 @@ library(caret)
 #Prepare ----
 rm(list = ls()) #usuniecie wszystkich elementow z pamieci podrecznej
 setwd("C:/Users/tgusc/Documents/GitHub/CC_Taiwan_WNE/") #work directory na lapku
-#work directory na tablecie
+setwd("C:/Users/User/Documents/GitHub/CC_Taiwan_WNE")#work directory na tablecie
 
 
 #Import raw data ----
@@ -272,10 +277,10 @@ prop.table(table(cc_data_test$default.payment.next.month))
 ### Wlasnosci prognostyczne? Feature engineering w R? 
 ### Sprawdzenie danych pod regresje i pod inne modele
 
-zmienne_wszystkie <- c("LIMIT_BAL","AGE","BILL_AMT1","BILL_AMT2","BILL_AMT3","BILL_AMT4","BILL_AMT5","BILL_AMT5","PAY_AMT1","PAY_AMT2","PAY_AMT3","PAY_AMT4","PAY_AMT5","PAY_AMT6",
+zmienne_wszystkie <- c("LIMIT_BAL","AGE","BILL_AMT1","BILL_AMT2","BILL_AMT3","BILL_AMT4","BILL_AMT5","BILL_AMT6","PAY_AMT1","PAY_AMT2","PAY_AMT3","PAY_AMT4","PAY_AMT5","PAY_AMT6",
                        "SEX","EDUCATION","MARRIAGE","PAY_0","PAY_2","PAY_3","PAY_4","PAY_5","PAY_6")
 
-zmienne_ilosciowe <- c("LIMIT_BAL","AGE","BILL_AMT1","BILL_AMT2","BILL_AMT3","BILL_AMT4","BILL_AMT5","BILL_AMT5","PAY_AMT1","PAY_AMT2","PAY_AMT3","PAY_AMT4","PAY_AMT5","PAY_AMT6")
+zmienne_ilosciowe <- c("LIMIT_BAL","AGE","BILL_AMT1","BILL_AMT2","BILL_AMT3","BILL_AMT4","BILL_AMT5","BILL_AMT6","PAY_AMT1","PAY_AMT2","PAY_AMT3","PAY_AMT4","PAY_AMT5","PAY_AMT6")
 
 zmienne_jakosciowe <- c("SEX","EDUCATION","MARRIAGE","PAY_0","PAY_2","PAY_3","PAY_4","PAY_5","PAY_6")
 
@@ -290,6 +295,28 @@ cc_data_logit1 <- lm(as.formula(names),
 
 summary(cc_data_logit1) # aR2 = 0.1843, model łącznie istotny (p-value F-statistic < 0.05)
 
+# and now for something completely different
+# random forest
 
+#zdefiniowana formula modelu
+
+model1.formula <- default.payment.next.month ~ LIMIT_BAL + AGE + SEX + EDUCATION + MARRIAGE +
+BILL_AMT1 + BILL_AMT2 + BILL_AMT3 + BILL_AMT4 + BILL_AMT5 + BILL_AMT6 +
+PAY_AMT1 + PAY_AMT2 + PAY_AMT3 + PAY_AMT4 + PAY_AMT5 + PAY_AMT6 + 
+PAY_0 + PAY_2 + PAY_3 + PAY_4 + PAY_5 + PAY_6
+
+# x:        formuła modelu 
+# data:     ramka danych (data frame) z obserwacjami
+# ntree:    liczba drzew do skonstruowania (domyślnie = 500)
+# mtry:     liczba zmiennych spośród których wybierane będą te do 
+#           utworzenia węzłów (domyślnie = sqrt(liczba wszystkich predyktorów))
+# replace:  TRUE jeżeli chcemy losować ze zwracaniem
+# sampsize: liczebność próbki do tworzenia drzew, która jest losowana 
+#           z pełnej próby (dla replace = TRUE domyślnie = nrow(x))
+# importance: TRUE jeśli chcemy zapisać do wynikowego obiektu miary 
+#             ważności zmiennych
+
+cc_data.rf <- randomForest(model1.formula, 
+                           data = cc_data_train)
 
 
