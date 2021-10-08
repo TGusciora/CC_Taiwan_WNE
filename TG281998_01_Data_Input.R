@@ -20,6 +20,13 @@
 #install.packages('shiny')
 #install.packages("randomForest")
 #install.packages("ranger")
+#install.packages("gbm")
+#install.packages("xgboost")
+#install.packages("fastAdaboost")
+#install.packages("adaStump")
+#install.packages("caret")
+#install.packages("tibble")
+#install.packages("here")
 #Library ----
 
 library(dplyr)
@@ -37,13 +44,21 @@ library(caret)
 library(randomForest)
 library(ranger)
 
+library(gbm)
+library(xgboost)
+library(fastAdaboost)
+library(adaStump)
+library(caret)
+library(tibble)
+library(here)
+
 #Notes ----
 #basicStats(wzrost) #DESCRIPTIVE STATISTICS OF EACH VARIABLE 
 
 #Prepare ----
 rm(list = ls()) #usuniecie wszystkich elementow z pamieci podrecznej
 setwd("C:/Users/tgusc/Documents/GitHub/CC_Taiwan_WNE/") #work directory na lapku
-setwd("C:/Users/User/Documents/GitHub/CC_Taiwan_WNE")#work directory na tablecie
+#setwd("C:/Users/User/Documents/GitHub/CC_Taiwan_WNE")#work directory na tablecie
 
 
 #Import raw data ----
@@ -257,12 +272,23 @@ sum_marr_edu <- cc_data %>%
 #Podzial zbioru na czesc uczaca sie i testowa
 
 set.seed(1235)
+#zmiana zmiennej celu na factor
 data_part <- createDataPartition(cc_data$default.payment.next.month,
                                     p = 0.7,
                                     list = FALSE)
 
 cc_data_train <- cc_data[data_part,]
 cc_data_test <- cc_data[-data_part,]
+
+#i zbiorki, gdzie zmienna celu jest factorem
+cc_data_train_fct <- cc_data_train
+Cc_data_test_fct <- cc_data_test
+
+cc_data_train_fct=cc_data_train_fct %>% mutate(default.payment.next.month=as.factor(default.payment.next.month)) 
+Cc_data_test_fct=Cc_data_test_fct %>% mutate(default.payment.next.month=as.factor(default.payment.next.month)) 
+
+cc_data_train_fct  <- cc_data_train_fct %>% as.data.frame()
+Cc_data_test_fct <- Cc_data_test_fct %>% as.data.frame()
 
 # Liczebności utworzonych zbiorów
 
@@ -298,7 +324,7 @@ summary(cc_data_logit1) # aR2 = 0.1843, model łącznie istotny (p-value F-stati
 # and now for something completely different
 # random forest
 
-#zdefiniowana formula modelu
+#RANDOM FORESTS
 
 model1.formula <- default.payment.next.month ~ LIMIT_BAL + AGE + SEX + EDUCATION + MARRIAGE +
 BILL_AMT1 + BILL_AMT2 + BILL_AMT3 + BILL_AMT4 + BILL_AMT5 + BILL_AMT6 +
@@ -317,6 +343,61 @@ PAY_0 + PAY_2 + PAY_3 + PAY_4 + PAY_5 + PAY_6
 #             ważności zmiennych
 
 cc_data.rf <- randomForest(model1.formula, 
-                           data = cc_data_train)
+                           data = cc_data_train_fct)
 
+summary(cc_data.rf)
+
+#GRADIENT BOOSTING
+
+glimpse(cc_data_train)
+
+cc_data.gbm <- 
+  gbm(model1.formula,
+      data = cc_data_train,
+      distribution = "bernoulli",
+      # całkowita liczba drzew
+      n.trees = 500,
+      # liczba interakcji zmiennych - de facto głębokość drzewa
+      interaction.depth = 4,
+      # shrinkage parameter - szybkość uczenia
+      shrinkage = 0.01,
+      verbose = FALSE)
+
+# Predykcje na train oraz test
+
+cc_data.pred.train.gbm <- predict(cc_data.gbm,
+                                  cc_data_train, 
+                                  # type = "response" daje 
+                                  # w tym przypadku
+                                  # prawdopodobieństwo sukcesu
+                                  type = "response",
+                                  # parametr n.trees umożliwia
+                                  # wybranie iteracji, z której 
+                                  # prognozę zwracamy
+                                  n.trees = 500)
+
+
+cc_data.pred.test.gbm <- predict(cc_data.gbm,
+                                 Cc_data_test_fct, 
+                                  # type = "response" daje 
+                                  # w tym przypadku
+                                  # prawdopodobieństwo sukcesu
+                                  type = "response",
+                                  # parametr n.trees umożliwia
+                                  # wybranie iteracji, z której 
+                                  # prognozę zwracamy
+                                  n.trees = 500)
+
+#Podsumowanie predykcji - nie dziala
+
+acc_gbm_sum <- data.frame(matrix(NA, nrow = 21000, ncol = 0))
+
+acc_gbm_sum$actual <- cc_data_train$default.payment.next.month
+acc_gbm_sum$pred <- cc_data.pred.train.gbm
+
+acc_gbm_sum$pred[acc_gbm_sum$pred<=0.4] <- 0 
+acc_gbm_sum$pred[acc_gbm_sum$pred>0.4] <- 1
+
+confusionMatrix(factor(acc_gbm_sum$pred),factor(acc_gbm_sum$actual),positive='1')
+#sprawdzic co model przewiduje - jedynki czy zera?
 
