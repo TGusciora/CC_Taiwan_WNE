@@ -1,0 +1,28 @@
+{
+    "id": "A01D6978",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1634131749529.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "id": "d608cde5c1b141d6910c19a28d13bcf1",
+        "name": "cc_data.gbm2",
+        "title": "cc_data.gbm2",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1597005002,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1634131749529,
+    "read_only": false,
+    "read_only_alternatives": []
+}

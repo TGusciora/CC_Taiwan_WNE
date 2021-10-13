@@ -395,9 +395,43 @@ acc_gbm_sum <- data.frame(matrix(NA, nrow = 21000, ncol = 0))
 acc_gbm_sum$actual <- cc_data_train$default.payment.next.month
 acc_gbm_sum$pred <- cc_data.pred.train.gbm
 
-acc_gbm_sum$pred[acc_gbm_sum$pred<=0.4] <- 0 
-acc_gbm_sum$pred[acc_gbm_sum$pred>0.4] <- 1
+acc_gbm_sum$pred[acc_gbm_sum$pred<=0.5] <- 0 
+acc_gbm_sum$pred[acc_gbm_sum$pred>0.5] <- 1
 
 confusionMatrix(factor(acc_gbm_sum$pred),factor(acc_gbm_sum$actual),positive='1')
-#sprawdzic co model przewiduje - jedynki czy zera?
+#Model przewiduje jedynki - czyli wyższe p_1 oznacza większe prawdopodobieństwo bycia "1"
+
+#tuning parametrow modelu
+
+parametry_gbm <- expand.grid(interaction.depth = c(1, 2, 4),
+                             n.trees = c(100, 500),
+                             shrinkage = c(0.01, 0.1), 
+                             n.minobsinnode = c(100, 250, 500))
+
+ctrl_cv3 <- trainControl(method = "cv", 
+                         number = 3,
+                         classProbs = TRUE,
+                         summaryFunction = twoClassSummary)
+
+
+  set.seed(1235)
+  cc_data.gbm2  <- train(model1.formula,
+                         data = cc_data_train_fct,
+                         distribution = "bernoulli",
+                         method = "gbm",
+                         tuneGrid = parametry_gbm,
+                         #trControl = ctrl_cv3,
+                         verbose = FALSE)
+ # saveRDS(object = cc_data.gbm2,
+  #        file   = here("output", "cc_data.gbm2"))
+  
+  ?make.names
+
+
+#Wczytanie zapisanego zbioru danych
+#cc_data.gbm2 <- readRDS(here("output", "cc_data.gbm2.rds"))
+
+cc_data.gbm2
+# best params -  n.trees=500 interaction.depth=4, shrinkage=0.01 n.minobsinnode=500
+# accuracy - 0.8219956  kappa - 0.3835577
 

@@ -1,0 +1,162 @@
+# ############################################################################
+#       Uniwersytet Warszawski, Wydział Nauk Ekonomicznych                   #
+#                                                                            #
+#             S T U D I A      P O D Y P L O M O W E                         #
+#                                                                            #
+#            Data Science w zastosowaniach biznesowych.                      #
+#              Warsztaty z wykorzystaniem programu R                         #
+#                                                                            #
+#                     rok akademicki 2019/2020                               #
+#                        Machine learning 2                                  #
+#                                                                            #
+# ############################################################################
+
+# 1. RENDERING plików Rmd ze slajdami do html/pdf ==============================
+# W tej sekcji możemy zrenderować pliki Rmd ze slajdami i wprowadzeniem do 
+# plików pdf/html. 
+rmarkdown::render(
+  input = "slides/00_wprowadzenie.Rmd",
+  output_file  = "00_wprowadzenie.html",
+  output_dir   = "html",
+  encoding     = 'UTF-8'
+)
+rmarkdown::render(
+  input = "slides/01_drzewa_regresyjne.Rmd",
+  output_file  = "01_drzewa_regresyjne.pdf",
+  output_dir   = "pdf",
+  encoding     = 'UTF-8'
+)
+rmarkdown::render(
+  input = "slides/02_drzewa_klasyfikacyjne.Rmd",
+  output_file  = "02_drzewa_klasyfikacyjne.pdf",
+  output_dir   = "pdf",
+  encoding     = 'UTF-8'
+)
+rmarkdown::render(
+  input = "slides/03_bagging_lasy.Rmd",
+  output_file  = "03_bagging_lasy.pdf",
+  output_dir   = "pdf",
+  encoding     = 'UTF-8'
+)
+rmarkdown::render(
+  input = "slides/04_boosting.Rmd",
+  output_file  = "04_boosting.pdf",
+  output_dir   = "pdf",
+  encoding     = 'UTF-8'
+)
+rmarkdown::render(
+  input = "slides/05_ensembling.Rmd",
+  output_file  = "05_ensembling.pdf",
+  output_dir   = "pdf",
+  encoding     = 'UTF-8'
+)
+rmarkdown::render(
+  input = "slides/06_sieci_neuronowe.Rmd",
+  output_file  = "06_sieci_neuronowe.pdf",
+  output_dir   = "pdf",
+  encoding     = 'UTF-8'
+)
+
+# 2. RENDERING plików Rmd z przykładami do plików html ========================
+# W tej sekcji możemy zrenderować pliki Rmd z kodem R i opisami do plików html
+rmarkdown::render(
+  input = "scripts/01_drzewa_regresyjne.Rmd",
+  output_file   = "01_drzewa_regresyjne.html",
+  output_dir    = "html",
+  encoding      = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/02_drzewa_klasyfikacyjne.Rmd",
+  output_file   = "02_drzewa_klasyfikacyjne.html",
+  output_dir    = "html",
+  encoding      = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/03_bagging_lasy.Rmd",
+  output_file   = "03_bagging_lasy.html",
+  output_dir    = "html",
+  encoding      = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/04_boosting.Rmd",
+  output_file   = "04_boosting.html",
+  output_dir    = "html",
+  encoding      = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/05_ensembling.Rmd",
+  output_file   = "05_ensembling.html",
+  output_dir    = "html",
+  encoding      = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/06_sieci_neuronowe.Rmd",
+  output_file   = "06_sieci_neuronowe.html",
+  output_dir    = "html",
+  encoding      = 'UTF-8'
+)
+
+# 3. PURLING plików Rmd do  R ==================================================
+# W tej sekcji można przekształcić pliki Rmd do plików R. 
+# Istotną role pełni parametr `documentation`. Wartośc `2` oznacza, że 
+# w plikach R chcemy zawrzeć tekst w postaci komentarzy roxygen2.
+knitr::purl(input    = "scripts/01_drzewa_regresyjne.Rmd",
+            output   = "scripts/01_drzewa_regresyjne.R",
+            documentation = 2)
+knitr::purl(input    = "scripts/02_drzewa_klasyfikacyjne.Rmd",
+            output   = "scripts/02_drzewa_klasyfikacyjne.R",
+            documentation = 2)
+knitr::purl(input    = "scripts/03_bagging_lasy.Rmd",
+            output   = "scripts/03_bagging_lasy.R",
+            documentation = 2)
+knitr::purl(input    = "scripts/04_boosting.Rmd",
+            output   = "scripts/04_boosting.R",
+            documentation = 2)
+knitr::purl(input    = "scripts/05_ensembling.Rmd",
+            output   = "scripts/05_ensembling.R",
+            documentation = 2)
+knitr::purl(input    = "scripts/06_sieci_neuronowe.Rmd",
+            output   = "scripts/06_sieci_neuronowe.R",
+            documentation = 2)
+
+# 4. RENDERING plików R do html ================================================
+# Po wygenerowaniu plików R z plików Rmd za pomocą funkcji knitr::purl()
+# możemy zrenderować je do plików html, podobnie jak wcześniej renderowaliśmy
+# pliki Rmd do html. W większości przypadków wygenerowany plik html powinien
+# być identyczny jak w przypadku renderowania bezpośrednio z Rmd do html.
+rmarkdown::render(
+  input = "scripts/01_drzewa_regresyjne.R",
+  output_file = "01_drzewa_regresyjne.html",
+  output_dir = "scripts",
+  encoding = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/02_drzewa_klasyfikacyjne.R",
+  output_file = "02_drzewa_klasyfikacyjne.html",
+  output_dir = "scripts",
+  encoding = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/03_bagging_lasy.R",
+  output_file = "03_bagging_lasy.html",
+  output_dir = "scripts",
+  encoding = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/04_boosting.R",
+  output_file = "04_boosting.html",
+  output_dir = "scripts",
+  encoding = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/05_ensembling.R",
+  output_file = "05_ensembling.html",
+  output_dir = "scripts",
+  encoding = 'UTF-8'
+)
+rmarkdown::render(
+  input = "scripts/06_sieci_neuronowe.R",
+  output_file = "06_sieci_neuronowe.html",
+  output_dir = "scripts",
+  encoding = 'UTF-8'
+)
