@@ -1,0 +1,474 @@
+##############################################################################
+# 			Uniwersytet Warszawski, Wydział Nauk Ekonomicznych                   #
+#                                                                            #
+#             S T U D I A      P O D Y P L O M O W E                         #
+#                                                                            #
+#            Data Science w zastosowaniach biznesowych.                      #
+#              Warsztaty z wykorzystaniem programu R                         #
+#                                                                            #
+#                                                                            #
+#                     Rok akademicki 2019/2020                               #
+#              Wprowadzenie do środowiska R i RStudio                        #
+#                                                                            #
+##############################################################################
+# 2. Podstawy programowania w R (2.1 - 2.2)                                  #
+##############################################################################
+
+# znacznik > w konsoli R oznacza, że R czeka na nasze polecenia
+
+# Jak wywolać polecenie w R?
+# Kursor w linijce, którą chcemy wywołać
+# albo zaznaczyć odpowiednią tresc.
+# Nastepnie Ctrl + Enter,
+# albo Run w prawym gornym rogu.
+
+# Podczas wykonywania polecenia kursor może być
+# ustawiony w dowolnym miejscu wiersza
+
+# znak "#" - umozliwia tworzenie komentarzy. 
+# Program R pomija wszystko, co znajduje sie w danej linii po znaku "#".
+
+
+# 2.1. R jako kalkulator, operatory arytmetyczne -------------------------------
+
+
+# proste obliczenia - wyrażenia
+
+## Podstawowe dzialania
+1+3+5 # Dodawanie
+125672-13297 # Odejmowanie
+10*10 # Mnozenie
+12/10 # Dzielenie
+12%%10 # Reszta z dzielenia
+12%/%10 # Czesc calkowita z dzielenia
+3^3 # Potegowanie
+sqrt(121) # Pierwiastek kwadratowy (square root)
+121^(1/2) # Pierwiastkowanie
+121^0.5 # Uzywanie ulamkow zwyklych, jak i dziesietnych
+121^1/2 # Uwaga na kolejnosc dzialan
+
+## Rozbudowane dzialania:
+2^3+4*(16-10)
+10^2%%8
+10^2/8
+3 ^ 2 - 1 + 3 ** (2 - 1) / 3 # spacje nie mają znaczenia
+
+# jako operatora potęgowania można też używać symbolu **
+3 ** 2 - 1 + 3 ** (2 - 1) / 3
+
+
+# Jeśli uruchamiana komenda nie jest kompletna,
+# znacznik w konsoli R (prompt) zmieni się z > na +
+
+# wykonajmy poniższe polecenie, zaznaczając najpierw tylko
+# piewrszy, a potem tylko drugi jego wiersz i je uruchamiając
+
+5 + 6 - 3 - 6 + 4 + 2 - 
+  4 + 8 + 3 + 2 + 7
+
+# jeśli wywołamy powyższe polecenie bez zaznaczania (skrót klawiszowy
+# albo przycisk "Run"), od razu wykona się pełne polecenie, 
+# obejmujące wszystkie jego wiersze
+# (znów niezależnie od położenia kursora w czasie wykonywania
+# polecenia)
+
+
+# W jednym wierszu może się znajdować więcej niż jedno polecenie.
+# Muszą one być jednak rozdzielone średnikami
+
+2 + 3; 5 * 7; 3 - 7
+
+
+# możemy też wykorzystywać wbudowane funkcje arytmetyczne
+
+# sqrt() oznacza pierwiastek kwadratowy
+
+sqrt(100)
+
+# abs() oznacza wartość bezwzględną
+
+abs(-100)
+
+# jako argument funkji można podać wyrażenie arytmetyczne
+
+abs(10 - 2 ** 4)
+
+# round() zaokrągla liczbę do najbliższej całkowitej
+
+round(1.23456789)
+
+round(-1.23456789)
+
+# możemy też zaokrąglić liczbę do wybranej liczby 
+# miejsc dziesiętnych - wtedy należy użyć
+# dodatkowego argumentu funkcji round(): digits =
+
+round(1.23456789, digits = 2)
+
+round(-1.23456789, digits = 4)
+
+# użycie ujemnej wartości digits= spowoduje
+# zaokrąglenie do wielokrotności określonej 
+# potęgi liczby 10
+
+# zaokrąglenie do wielokrotności 10**1
+
+round(12.3456789, digits = -1)
+round(123.456789, digits = -1) 
+
+# zaokrąglenie do wielokrotności 10**2
+
+round(12.3456789, digits = -2)
+round(123.456789, digits = -2) 
+
+# Skąd wiadomo, jakie funkcja round() ma argumenty?
+# help(round) albo bezpośrednio wpisanie funkcji w okno pomocy
+
+# funkcje floor() i ceiling() zaokrąglają do najbliższej
+# wartości całkowitej odpowiednio w dół i w górę
+
+floor(1.23456789)
+
+floor(-1.23456789)
+
+ceiling(1.23456789)
+
+ceiling(-1.23456789)
+
+
+# log() oznacza logarytm naturalny
+
+log(123)
+
+log(2 * 3)
+
+log(3 ** 2 - 1 + 3 ** (2 - 1) / 3)
+
+# Zwróćmy uwagę, że używamy wyłącznie nawiasów okrągłych.
+# Nie używa się w R nawiasów kwadratowych lub klamrowych 
+# do komunikowania hierarchii wykonywanych działań.
+# Np. log[3 ** 2 - 1 + 3 ** (2 - 1) / 3]
+# Nawiast kwadratowy ma inne znaczenie i będzie wprowadzony później.
+
+# możemy użyć innej podstawy logarytmu
+# podając drugi argument base=
+
+log(3 ** 2 - 1 + 3 ** (2 - 1) / 3, base = 2)
+
+# Ponownie - skąd znamy argumenty funkcji?
+# help(log)
+# Przykład z instrukcji informuje nas, jaka podstawa
+# jest wielkością domyślną: log(x, base = exp(1))
+
+# Spójrzmy też, że ogólna forma to log(x,base),
+# co oznacza, że poniższe komendy są ekwiwalentne
+log(10, 2)
+log(10, base = 2)
+
+# Ale też:
+log2(10)
+
+# exponenta z x
+
+exp(3)
+
+exp(1-.05)
+
+# jeśli wynikowa liczba jest duża, np.
+
+exp(34)
+
+# R będzie próbował ją wyświetlić za pomocą jak najmniejszej 
+# liczby znaków i może użyć tzw. notacji naukowej
+# (scientific notation):
+# 5.834617e+14 = 5.834617 * 10 ** 14
+
+exp(-34)
+
+# 1.713908e-15 = 1.713908 * 10 ** (-15)
+
+# jeśli nie lubimy takiej notacji, można ją wyłączyć, 
+# zmieniając opcję systemową scipen (scientific penalty)
+# - definiuje on "karę" nakładaną na notację naukową - 
+# wskazując, o ile znaków dłuższa będzie traktowana
+# notacja naukowa, np.
+
+options(scipen = 20)
+
+# oznacza, że zapis za pomocą notacji naukowej będzie
+# traktowany jako o 20 znaków dłuższy niż w rzeczywistości
+
+exp(34)
+exp(-34)
+
+
+# funkcje można dowolnie w sobie zagnieżdżać
+# należy pamiętać, żeby tyle samo nawiasów otworzyć i zamknąć
+# i aby wstawić je we właściwych miejscach - edytor RStudio 
+# jest w tym pomocny - po ustawieniu kursowa PO wybranym 
+# nawiasie, wskazuje nawias z nim sparowany
+
+abs(-round(123 * exp(sqrt(log(3 ** 2 - 1 + 3 ** (2 - 1) / 3, base = 2))), -1))
+
+
+# Korzystanie z pomocy
+
+help() #wywolanie dokumentacji - pomoc na temat funkcji help
+help(abs) #wywolanie pomocy na temat konkretnej funkcji 
+?abs #wywolanie pomocy na temat konkretnej funkcji 
+# Pisownia kluczowa - musi się idealnie zgadzać (takze male i wielkie litery)
+# R zwraca uwagę na małe i wielkie litery.
+
+# Jeśli nie znam konkretnej funkcji, można wpisać słowo kluczowe:
+??exponent 
+# Wiele haseł, można spojrzeć na base::log
+
+# Tak samo działa poniższa komenda
+help.search("exponent") # wyszukuje w dokumentacji funkcje związane z danym hasłem
+apropos("exponent") # wymienia wszystkie funkcje zawierajace podane slowo kluczowe
+apropos("exp") # jak wyzej, ale szerszy zakres wyszukiwania
+
+# Na marginesie:
+# Wyczyszczenie treści okna konsoli: Ctrl + L
+
+# Więcej skrótów klawiaturowych dla RStudio:
+# https://rstudio.com/wp-content/uploads/2016/01/rstudio-IDE-cheatsheet.pdf
+
+# Skróty można też samemu zdefiniować / zmodyfikować:
+# Tools -> Modify Keyboard Shortcuts
+
+# Ćwiczenia 2.1.-----------------------------------------------------
+
+# 2.1.1
+# Policz w R cosinus ze stukrotności liczby pi
+# oraz tangens z liczby pi pomniejszonej o 1.
+# Podpowiedź: do znalezienia funkcji trygonometrycznych
+# skorzystaj z help.search("trigonometric").
+??cosinus
+pi
+cos(100*pi)
+tan(pi-1)
+
+# 2.1.2
+# Zapisz w jednym wersie i oblicz następującą wartość
+# zaokrągloną do liczb całkowitych (nic po przecinku):
+# pierwiastek kwadratowy z zaokrąglonej do 3 miejsc po przecinku
+# wartości bezwzględnej z logartymu o podstawie 10 z liczby
+# 120 + (4 do potęgi 2) - (27 podzielone na 2).
+
+# sprawdzenie
+log(120+4**2-27/2, base = 10)
+round(abs(log(120+4**2-27/2, base = 10)), digits=3)
+sqrt(round(abs(log(120+4**2-27/2, base = 10)), digits=3))
+
+# ODP - 1 wers
+round(sqrt(round(abs(log(120+4**2-27/2,10)),3)))
+
+# 2.1.3
+# Policz sumę wszystkich liczb całkowitych od 1 do 20,
+# wykorzystując tylko 9 znaków do zapisania komendy
+# liczącej tę sumę.
+# Podpowiedź: Sprawdź funkcję "sum".
+help(sum)
+sum(1:20)
+
+# 2.2. Rodzaje poleceń w R - wyrażenia vs przypisania,------------------
+#     warianty operatora przypisania
+
+# wszystkie powyższe przykłady poleceń to były
+# tzw. wyrażenia - ich wynik był natychmiast
+# wyświetlany, ale nie był zapisywany do obiektu
+# w przestrzeni roboczej
+
+# zapiszmy wynik ostatniego polecenia do obiektu
+# o nazwie wynik
+
+wynik <- abs(-round(123 * exp(sqrt(log(3 ** 2 - 1 + 3 ** (2 - 1) / 3, base = 2))), -1))
+
+# To polecenie nazywa się przypisaniem.
+# Teraz wynik nie jest bezpośrernio wyświetlony, 
+# ale został zapisany do obiektu o podanej nazwie
+
+# tę samą operację można wykonać używając
+# różnych wersji operatora przypisania
+
+wynik1 = abs(-round(123 * exp(sqrt(log(3 ** 2 - 1 + 3 ** (2 - 1) / 3, base = 2))), -1))
+
+abs(-round(123 * exp(sqrt(log(3 ** 2 - 1 + 3 ** (2 - 1) / 3, base = 2))), -1)) -> wynik2
+
+# efekt jest w każdym przypadku identyczny
+
+# jeśli tworzony obiekt już istnieje
+# jego wartość będzie zastąpiona nową
+
+wynik2 = 10
+wynik2 <- 20*3^5-log(59)
+
+# Możemy następnie wykonać działanie na takim obiekcie
+# Na przykład
+round(wynik2, -1)
+
+# I przypisać to do nowego obiektu
+wynik3 = round(wynik2, -1)
+
+# Albo zastąpić stary wynik nowym wynikiem
+wynik2 <- round(wynik2, -1)
+# W tym przypadku najpierw dzieje się obliczenie (tu z prawej strony),
+# a następnie przypisanie, czyli zastąpienie starego wynik2
+# nowym wynik2
+
+# Ważne - nie możemy zrobić przypisania do liczby:
+3 = round(wynik2, -1)
+# Innymi słowy, obiektem nie może być liczba
+
+# załóżmy, że chcemy policzyć pole koła o promieniu 
+# zdefiniowanym jako obiekt o nazwie r
+
+r <- 24
+
+# ciekawostka! jeśli polecenie będące przypisaniem
+# umieścimy w nawiesie () to po jego wykonaniu
+# wynikowy obiekt będzie także wyświetlony w konsoli
+
+(r <- 24)
+
+# spróbujmy sprawdzić, czy istnieje obiekt o nazwie R
+R
+
+# można to także zrobić za pomocą funkcji
+# exists(), gdzie nazwę obiektu podaje się
+# jako argument tekstowy (w cudzysłowiu)
+
+exists("R")
+
+# wynikiem jest wartość logiczna TRUE albo FALSE
+
+# co ciekawe (i jak wiemy z poprzedniego zadania), 
+# stała pi jest już zdefiniowana w R
+pi
+
+# na marginesie - jak zmienić domyślną liczbę cyfr
+# podawanych przez R? 
+# Domyślnie jest 7. Znowu, skąd to wiadomo?
+# help("options")
+options(digits = 12)
+
+# policzmy więc pole koła - operacje arytmetyczne
+# można wykonywać także na zapisanych obiektach
+
+pi * r ** 2
+pi*r^2
+
+# Drugie cwiczenia - sprawne poruszanie TG ------------
+
+# Na marginesie: Jak się sprawnie poruszać po kodzie?
+# Sekcje wydzielone minimum: 4 myślnikami (-), 
+# 4 znakami równości (=) albo 4 znakami kratki / hashami (#)
+# Shift + Alt + J
+
+# Ćwiczenia 2.2.----------------------------------------------------
+
+# 2.2.1
+# Mamy stożek o podstawie o promieniu 15 i wysokości 4. 
+# Chcemy policzyć jego (a) objętość oraz (b) pole podstawy
+# i ścian bocznych.
+# Wzór na objętość stożka to 1/3*pi*r^2*H, 
+# gdzie r to promień, a H wysokość.
+# Wzór na pole podstawy stożka to pi*r^2. 
+# Wzór na pole powierzchni bocznej stożka to pi*r*l,
+# gdzie l to długość ściany bocznej (tzw. tworząca stożka).
+# Tworzącą stożka można policzyć z Pitagorasa:
+# l = pierwiastek kwadratowy z sumy H^2 i r^2
+
+# (i) Przypisz wartości promienia i wysokości stożka
+# odpowiednim obiektom w R.
+
+r21=15
+h21=4
+
+
+
+
+
+
+
+# (ii) W jednym wersie zrób przypisanie łącznie z obliczeniem
+# dłgości tworzącej (ściany bocznej) stożka. Przybliż ją do 
+# dwóch miejsc po przecinku.
+l21 = round(sqrt(h21^2+r21^2),2)
+l21
+
+# (iii) Policz objętość stożka, zapisując odpowiedni obiekt w R
+# i jednocześnie wyświetlając tę wartość w konsoli. Wykonaj to 
+# w jednym wersie / jednej komendzie w R.
+(obj21 <- 1/3*pi*r21^2*h21)
+
+
+# (iv) Policz pole podstawy i ścian bocznych stożka, 
+# zapisując te wartości do określonych obiektów w R.
+# Wartości zaokrąglij do liczb całkowitych przy wykorzystaniu funkcji floor.
+(floor(pi*r21^2)) -> pp21
+(floor(pi*r21*l21)) -> psb21
+pp21
+psb21
+# (v) Sprawdź wyrażeniem logicznym w R, czy pole podstawy jest większe
+# od powierzchni bocznej stożka. Wynik zapisz do obiektu "czy".
+# Podpowiedź: help(">")
+czy=pp21>psb21
+(czy=pp21>psb21)
+czy
+
+# 2.2.2
+# Rozważ teraz stożek o promieniu 1 i wysokości 14. Dla takiego stożka
+# policz jego objętość, pole podstawy i ścian bocznych, a także sprawdź
+# wyrażeniem logicznym w R, czy pole podstawy jest równe
+# powierzchni bocznej. Wykorzystaj do tego kod stworzony powyżej.
+r22=1
+h22=14
+
+(obj22 <- 1/3*pi*r22**2*h22)
+l22 = sqrt(h22**2+r22**2)
+(pi*r22**2 -> pp22)
+(pi*r22*l22 -> psb22)
+czy22=(pp22==psb22)
+czy22
+
+
+#-----------------------------------------------------------------------------
+
+# Możemy usunąć obiekty z naszego środowiska pracy (prawy górny róg).
+# Np. korzystając z symbolu "miotełki" albo z kodu poniżej:
+rm(list=ls())
+
+# Można też nie usuwać całości
+
+# Stwórzmy kilka obiektów
+a = 2
+b = 3*4
+c = b
+d = abs(round(log(8)-19,2))
+
+# Funkcja ls() pokazuje nam wszystkie obiekty w środowisku pracy
+ls()
+
+# Można usunąć jeden obiekt, np.
+rm(a)
+
+# Albo kilka jednocześnie
+rm(b,c)
+
+# Jeszcze raz
+a = 2
+b = 3*4
+c = b
+d = abs(round(log(8)-19,2))
+
+# To nie działa:
+rm(ls())
+
+# Dlaczego? 
+# Bo elementy o różnych charakterach - pierwsze to wyszczególnione elementy,
+# drugie zaś to wektor i dla wektora potrzeba odnieść się do argumentu list=
+rm(list=ls())
+#Dziala
+

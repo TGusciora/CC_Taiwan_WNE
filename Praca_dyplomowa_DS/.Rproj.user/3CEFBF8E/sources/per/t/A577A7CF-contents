@@ -149,12 +149,34 @@ cc_data$PAY_5[cc_data$PAY_5==-2] <- 0 #zmiana wartosci -2 na wartosc 0 - termino
 cc_data$PAY_6[cc_data$PAY_6==-1] <- 0 #zmiana wartosci -1 na wartosc 0 - terminowa spłata zadłużenia
 cc_data$PAY_6[cc_data$PAY_6==-2] <- 0 #zmiana wartosci -2 na wartosc 0 - terminowa spłata zadłużenia
 
+cc_data=cc_data %>% mutate(PAY_0=as.factor(PAY_0))
+cc_data=cc_data %>% mutate(PAY_2=as.factor(PAY_2))
+cc_data=cc_data %>% mutate(PAY_3=as.factor(PAY_3))
+cc_data=cc_data %>% mutate(PAY_4=as.factor(PAY_4))
+cc_data=cc_data %>% mutate(PAY_5=as.factor(PAY_5))
+cc_data=cc_data %>% mutate(PAY_6=as.factor(PAY_6))
+
 table(cc_data$PAY_0)
 table(cc_data$PAY_2)
 table(cc_data$PAY_3)
 table(cc_data$PAY_4)
 table(cc_data$PAY_5)
 table(cc_data$PAY_6)
+
+levels(cc_data$PAY_0) <- c("P0","P1","P2","P3","P4","P5","P6","P7","P8")
+levels(cc_data$PAY_2) <- c("P0","P1","P2","P3","P4","P5","P6","P7","P8")
+levels(cc_data$PAY_3) <- c("P0","P1","P2","P3","P4","P5","P6","P7","P8")
+levels(cc_data$PAY_4) <- c("P0","P1","P2","P3","P4","P5","P6","P7","P8")
+levels(cc_data$PAY_5) <- c("P0","P2","P3","P4","P5","P6","P7","P8")
+levels(cc_data$PAY_6) <- c("P0","P2","P3","P4","P5","P6","P7","P8")
+
+table(cc_data$PAY_0)
+table(cc_data$PAY_2)
+table(cc_data$PAY_3)
+table(cc_data$PAY_4)
+table(cc_data$PAY_5)
+table(cc_data$PAY_6)
+
 
 ### Statystyki oczyszczonego zbioru danych
 
@@ -319,7 +341,7 @@ cc_data_logit1 <- lm(as.formula(names),
 
 # zobaczmy wynik
 
-summary(cc_data_logit1) # aR2 = 0.1843, model łącznie istotny (p-value F-statistic < 0.05)
+summary(cc_data_logit1) # aR2 = 0.2065, model łącznie istotny (p-value F-statistic < 0.05)
 
 # and now for something completely different
 # random forest
@@ -388,17 +410,7 @@ cc_data.pred.test.gbm <- predict(cc_data.gbm,
                                   # prognozę zwracamy
                                   n.trees = 500)
 
-#Podsumowanie predykcji - nie dziala
 
-acc_gbm_sum <- data.frame(matrix(NA, nrow = 21000, ncol = 0))
-
-acc_gbm_sum$actual <- cc_data_train$default.payment.next.month
-acc_gbm_sum$pred <- cc_data.pred.train.gbm
-
-acc_gbm_sum$pred[acc_gbm_sum$pred<=0.5] <- 0 
-acc_gbm_sum$pred[acc_gbm_sum$pred>0.5] <- 1
-
-confusionMatrix(factor(acc_gbm_sum$pred),factor(acc_gbm_sum$actual),positive='1')
 #Model przewiduje jedynki - czyli wyższe p_1 oznacza większe prawdopodobieństwo bycia "1"
 
 #tuning parametrow modelu
@@ -434,4 +446,195 @@ ctrl_cv3 <- trainControl(method = "cv",
 cc_data.gbm2
 # best params -  n.trees=500 interaction.depth=4, shrinkage=0.01 n.minobsinnode=500
 # accuracy - 0.8219956  kappa - 0.3835577
+
+cc_data.pred.train.gbm_m2 <- predict(cc_data.gbm2,
+                                  cc_data_train, 
+                                  # type = "response" daje 
+                                  # w tym przypadku
+                                  # prawdopodobieństwo sukcesu
+                                  type = "raw",
+                                  # parametr n.trees umożliwia
+                                  # wybranie iteracji, z której 
+                                  # prognozę zwracamy
+                                  n.trees = 500)
+
+
+cc_data.pred.test.gbm_m2 <- predict(cc_data.gbm2,
+                                 Cc_data_test_fct, 
+                                 # type = "response" daje 
+                                 # w tym przypadku
+                                 # prawdopodobieństwo sukcesu
+                                 type = "raw",
+                                 # parametr n.trees umożliwia
+                                 # wybranie iteracji, z której 
+                                 # prognozę zwracamy
+                                 n.trees = 500)
+
+
+#Podsumowanie predykcji
+
+acc_gbm_sum <- data.frame(matrix(NA, nrow = 21000, ncol = 0))
+
+acc_gbm_sum$actual <- cc_data_train$default.payment.next.month
+acc_gbm_sum$pred_gbm_m1 <- cc_data.pred.train.gbm
+acc_gbm_sum$pred_gbm_m2 <- cc_data.pred.train.gbm_m2
+
+acc_gbm_sum$pred_gbm_m1[acc_gbm_sum$pred_gbm_m1<=0.5] <- 0 
+acc_gbm_sum$pred_gbm_m1[acc_gbm_sum$pred_gbm_m1>0.5] <- 1
+#acc_gbm_sum$pred_gbm_m2[acc_gbm_sum$pred_gbm_m2<=0.5] <- 0 
+#acc_gbm_sum$pred_gbm_m2[acc_gbm_sum$pred_gbm_m2>0.5] <- 1
+
+confusionMatrix(factor(acc_gbm_sum$pred_gbm_m1),factor(acc_gbm_sum$actual),positive='1')
+confusionMatrix(factor(acc_gbm_sum$pred_gbm_m2),factor(acc_gbm_sum$actual),positive='1')
+
+acc_gbm_sum_test <- data.frame(matrix(NA, nrow = 9000, ncol = 0))
+acc_gbm_sum_test$actual <- cc_data_test$default.payment.next.month
+acc_gbm_sum_test$pred_gbm_m1 <- cc_data.pred.test.gbm
+acc_gbm_sum_test$pred_gbm_m2 <- cc_data.pred.test.gbm_m2
+
+acc_gbm_sum_test$pred_gbm_m1[acc_gbm_sum_test$pred_gbm_m1<=0.5] <- 0 
+acc_gbm_sum_test$pred_gbm_m1[acc_gbm_sum_test$pred_gbm_m1>0.5] <- 1
+#acc_gbm_sum_test$pred_gbm_m2[acc_gbm_sum_test$pred_gbm_m2<=0.5] <- 0 
+#acc_gbm_sum_test$pred_gbm_m2[acc_gbm_sum_test$pred_gbm_m2>0.5] <- 1
+
+confusionMatrix(factor(acc_gbm_sum_test$pred_gbm_m1),factor(acc_gbm_sum_test$actual),positive='1')
+confusionMatrix(factor(acc_gbm_sum_test$pred_gbm_m2),factor(acc_gbm_sum_test$actual),positive='1')
+
+
+
+########## XGBOOST 
+
+# 1. nrounds - liczba iteracji do momentu zakończenia trenowania modelu
+# 2. max_depth - maksymalna głębokość drzewa
+#    zakres: [1, nieskończoność]
+# 3. eta - wsp. learning rate
+#    dla wysokich wartości eta trenowanie modelu odbywa się szybciej!
+#    zakres: [0, 1]
+#    Z kolei niskie wartości dają lepsze wyniki, pod warunkiem, że 
+#    algorytm jest trenowany na odpowiednio dużej liczbie drzew.
+#    To jednak (znacznie) zwiększa jego złożoność obliczeniową i czasową
+# 4. gamma - Minimum Loss Reduction, minimalna redukcja optymizowanej funkcji 
+#    celu wymagana do wykonania kolejnego podziału w bieżącym końcowym 
+#    węźle drzewa. Wysoka wartość oznacza bardziej konserwatywny model.
+#    Można próbować z różnymi wartościami tego parametru jednak 
+#    za optymalizację modelu odpowiadają najczęściej inne parametry
+#    zakres: [0, nieskończoność]
+# 5. colsample_bytree - odsetek predyktorów wykorzystywanych w szukaniu
+#    optymalnych podziałów (podobnie jak w lasach losowych). 
+#    Wysokie wartości mogą prowadzić do przeuczenia modelu.
+#    Niskie wartości mogą prowadzić do niższej dokładności modelu.
+#    Zaleca się manipulowanie tym parametrem.
+#    zakres: (0, 1]
+# 6. min_child_weight - interpretacja podobna do minimalnej liczebności
+#    obserwacji w węźle końcowym
+#    zakres: [0, nieskończoność]
+# 7. subsample - wielkośc podpróbki losowanej ze zbioru treningowego
+#    wykorzystywanej do trenowania modelu. 
+#    1 oznacza 100% (całość zbioru treningowego)
+#    typowe wartości: [0.5, 1]
+
+
+#Wybierz względnie dużą wartość learning rate. Domyślną jest 0.1, ale równie dobrze można zacząć od wartości
+#między 0.05 i 0.2 (zależnie od problemu).
+#Wyznacz optymalną liczbę drzew dla tej wartości learning rate. Zwykle jest to wartość ok. 40-70.
+#Uwaga! Wybierz wartość, dla której Twój komputer policzy wynik wystarczająco szybko,
+#ponieważ te parametry będą używane do testowania różnych parametrów wielkości drzewa.
+#Dokonaj strojenia parametrów związanych z wielkością drzewa dla wybranej learning rate i wielkości drzewa.
+#Obniż wartość learning rate i zwiększ odpowiednio liczbę drzew, aby uzyskać stabilniejszy model.
+
+parametry_xgb <- expand.grid(nrounds = seq(20, 80, 10),
+                             max_depth = c(4),
+                             eta = c(0.25), 
+                             gamma = 1,
+                             colsample_bytree = c(0.2),
+                             min_child_weight = c(150),
+                             subsample = 0.8)
+
+#Poziomy zmiennych jakościowych należy przekształcić, aby nie zaczynały się od cyfry.
+#Jest to wymagane przez method = "xgbTree" w funkcji train().
+
+levels(cc_data_train_fct$default.payment.next.month) <- c("No","Yes")
+table(cc_data_train_fct$default.payment.next.month)
+
+cc_data.xgb_m3 <- train(model1.formula,
+                     data = cc_data_train_fct,
+                     method = "xgbTree",
+                     trControl = ctrl_cv3,
+                     tuneGrid  = parametry_xgb)
+
+glimpse(cc_data_train_fct)
+
+cc_data.xgb_m3 # dla nrounds=80 najlepsze dopasowanie sensivity i najwiekszy ROC
+#postaramy sie teraz dopasowac pozostale parametry
+
+parametry_xgb2 <- expand.grid(nrounds = 80,
+                              max_depth = seq(1, 15, 2),
+                              eta = c(0.25), 
+                              gamma = 1,
+                              colsample_bytree = c(0.2),
+                              min_child_weight = seq(50, 500, 50),
+                              subsample = 0.8)
+
+
+cc_data.xgb_m4 <- train(model1.formula,
+                      data = cc_data_train_fct,
+                      method = "xgbTree",
+                      trControl = ctrl_cv3,
+                      tuneGrid  = parametry_xgb2)
+
+cc_data.xgb_m4 #ROC 0.7726374 dla max_depth = 13 i min_child_weight = 200
+
+parametry_xgb3 <- expand.grid(nrounds = 80,
+                              max_depth = 13,
+                              eta = c(0.25), 
+                              gamma = 1,
+                              colsample_bytree = seq(0.1, 0.8, 0.1),
+                              min_child_weight = 200,
+                              subsample = 0.8)
+
+cc_data.xgb_m5 <- train(model1.formula,
+                      data = cc_data_train_fct,
+                      method = "xgbTree",
+                      trControl = ctrl_cv3,
+                      tuneGrid  = parametry_xgb3)
+
+cc_data.xgb_m5 #ROC 0.7773691 dla colsample_bytree = 0.7
+
+parametry_xgb4 <- expand.grid(nrounds = 80,
+                              max_depth = 13,
+                              eta = c(0.25), 
+                              gamma = 1,
+                              colsample_bytree = 0.7,
+                              min_child_weight = 200,
+                              subsample = c(0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95))
+
+
+cc_data.xgb_m6 <- train(model1.formula,
+                      data = cc_data_train_fct,
+                      method = "xgbTree",
+                      trControl = ctrl_cv3,
+                      tuneGrid  = parametry_xgb4)
+
+cc_data.xgb_m6 # The final values used for the model were nrounds = 80, max_depth = 13, eta = 0.25, gamma =
+#1, colsample_bytree = 0.7, min_child_weight = 200 and subsample = 0.95.
+
+parametry_xgb5 <- expand.grid(nrounds = 1000,
+                              max_depth = 13,
+                              eta = 0.01, 
+                              gamma = 1,
+                              colsample_bytree = 0.7,
+                              min_child_weight = 200,
+                              subsample = 0.95)
+
+cc_data.xgb_m7 <- train(model1.formula,
+                      data = cc_data_train_fct,
+                      method = "xgbTree",
+                      trControl = ctrl_cv3,
+                      tuneGrid  = parametry_xgb5)
+
+cc_data.xgb_m7
+
+#najlepszy ROC uzyskany 0.7762343 -> po zwiekszeniu do 1000 rund i eta 0.01 roc zmienia sie na 0.7785012
+
+
 
