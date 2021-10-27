@@ -27,7 +27,15 @@
 #install.packages("caret")
 #install.packages("tibble")
 #install.packages("here")
+#install.packages("neuralnet")
+#install.packages("pROC")
 #Library ----
+
+if (0) {
+  devtools::install_url('https://github.com/catboost/catboost/releases/download/v1.0.0/catboost-R-Windows-1.0.0.tgz',
+                        INSTALL_opts = c("--no-multiarch"))
+}
+
 
 library(dplyr)
 library(fBasics)
@@ -46,11 +54,14 @@ library(ranger)
 
 library(gbm)
 library(xgboost)
-library(fastAdaboost)
-library(adaStump)
 library(caret)
 library(tibble)
 library(here)
+library(catboost)
+
+library(neuralnet)
+library(here)
+library(pROC)
 
 #Notes ----
 #basicStats(wzrost) #DESCRIPTIVE STATISTICS OF EACH VARIABLE 
@@ -115,8 +126,8 @@ cc_data=cc_data %>% mutate(MARRIAGE=as.factor(MARRIAGE))
 
 
 levels(cc_data$SEX) <- c("Mężczyzna", "Kobieta")
-levels(cc_data$EDUCATION) <- c("Magister lub wyższe","Licencjat lub równoważne","Szkola średnia","Inne")
-levels(cc_data$MARRIAGE) <- c("Zamężna/żonaty","Kawaler/panna","Inne")
+levels(cc_data$EDUCATION) <- c("Magister lub wyzsze","Licencjat lub rownoważne","Szkola srednia","Inne")
+levels(cc_data$MARRIAGE) <- c("Zamezna/zonaty","Kawaler/panna","Inne")
 
 table(cc_data$SEX)
 table(cc_data$EDUCATION)
@@ -636,5 +647,162 @@ cc_data.xgb_m7
 
 #najlepszy ROC uzyskany 0.7762343 -> po zwiekszeniu do 1000 rund i eta 0.01 roc zmienia sie na 0.7785012
 
+#CATBOOST
+#zbior w wymaganej postaci przez catboost
+catboost_train    <- cc_data_train[,!names(cc_data_train) %in% c("id", "default.payment.next.month")] %>% as.data.frame()
+catboost_train_targets <- cc_data_train$default.payment.next.month
+catboost_train_pool    <- catboost.load_pool(data = catboost_train, label = catboost_train_targets)
 
+cat_params <- list(iterations = 10000,
+               learning_rate = 0.001,
+               depth = 5,
+               loss_function = 'CrossEntropy',
+               eval_metric = 'Recall',
+               random_seed = 1235,
+               od_type = 'Iter',
+               metric_period = 50,
+               od_wait = 50,
+               use_best_model = T
+               )
+
+cc_data.cat_m8 <- catboost.train(catboost_train_pool, params = cat_params)
+
+cc_data.cat_m8
+
+test_data    <- cc_data_test[,!names(cc_data_train) %in% c("id", "default.payment.next.month")] %>% as.data.frame()
+test_targets <- cc_data_test$default.payment.next.month
+real_pool    <- catboost.load_pool(test_data)
+
+catboost_pred <- catboost.predict(cc_data.cat_m8, real_pool)
+
+#Miary jakosci prognozy
+tibble(
+  pred = catboost_pred,
+  actual = test_targets
+) %>%
+  mutate(ae = abs(pred - actual),
+         se = (pred - actual) ^ 2) %>%
+  summarize(mae = mean(ae),
+            mse = mean(se))
+
+#Wykres jakosci predyktorow
+
+cat_fi_m8 <- catboost.get_feature_importance(cc_data.cat_m8, 
+                                      pool = NULL, 
+                                      type = 'FeatureImportance',
+                                      thread_count = -1) 
+tibble(
+  feat = rownames(cat_fi_m8) %>% as.factor(),
+  imp  = cat_fi_m8[, 1]
+) %>% 
+  ggplot(aes(reorder(feat, imp), imp)) +
+  geom_bar(stat = "identity") + 
+  coord_flip()
+
+#NEURAL NET
+
+
+#Trenowanie sieci neuronowej
+#Wszystkie zmienne ciągłe (a zatem inne niż zmienne jakościowe)
+#zanim trafią do sieci muszą zostać wystandaryzowane do wspólnej skali.
+
+
+#Niestety, pakiet neuralnet nie działa sprawnie na zmiennych jakościowych (tj. na faktorach).
+#Musimy je zatem wszystkie przekształcić do odpowiednich zmiennych zerojedynkowych (wymaga tego funkcja neuralnet).
+
+
+cc_data_train_matrix <- 
+  model.matrix(object = model1.formula, 
+               data   = cc_data_train)
+dim(cc_data_train_matrix)
+
+colnames(cc_data_train_matrix)
+
+#manualna poprawa nazw zmiennych
+colnames(cc_data_train_matrix) <- gsub(" ", "_",  colnames(cc_data_train_matrix))
+colnames(cc_data_train_matrix) <- gsub("/", "",   colnames(cc_data_train_matrix))
+
+colnames(cc_data_train_matrix)
+
+#analogicznie dla test
+cc_data_test_matrix <- 
+  model.matrix(object = model1.formula, 
+               data   = cc_data_test)
+
+colnames(cc_data_test_matrix) <- gsub(" ", "_",  colnames(cc_data_test_matrix))
+colnames(cc_data_test_matrix) <- gsub("/", "",   colnames(cc_data_test_matrix))
+
+colnames(cc_data_test_matrix)
+
+
+#Następnie dokonamy standaryzacji (przeskalowania) zmiennych. 
+#Ten etap jest niezbędny, ponieważ w sieciach neuronowych funkcje aktywujące poszczególne neurony przyjmują
+#wartości między -1 a +1, zaś predyktory w zbiorze treningowym zwykle przyjmują wartości z różnych skal
+
+(nn_train.maxs <- apply(cc_data_train_matrix, 2, max))
+(nn_train.mins <- apply(cc_data_train_matrix, 2, min))
+
+cc_data_train_matrix_scaled <- 
+  as.data.frame(scale(cc_data_train_matrix, 
+                      center = nn_train.mins, 
+                      scale  = nn_train.maxs - nn_train.mins))
+
+cc_data_test_matrix_scaled <- 
+  as.data.frame(scale(cc_data_test_matrix, 
+                      center = nn_train.mins, 
+                      scale  = nn_train.maxs - nn_train.mins))
+
+
+cc_data_train_matrix_scaled <- cc_data_train_matrix_scaled[,!names(cc_data_train_matrix_scaled) %in% c("(Intercept)", "PAY_4P1")] %>% as.data.frame()
+cc_data_test_matrix_scaled <- cc_data_test_matrix_scaled[,!names(cc_data_test_matrix_scaled) %in% c("(Intercept)", "PAY_4P1")] %>% as.data.frame()
+
+#zaktualizowana formula modelu
+
+col_list <- 
+  paste(c(colnames(cc_data_train_matrix_scaled[, -1])), collapse = "+")
+col_list <- paste(c("default.payment.next.month ~ ", col_list), collapse = "")
+(model.formula2 <- formula(col_list))
+
+#Trenowanie modelu
+
+cc_data.nn_m9 <- 
+  data.frame(cc_data_train_matrix_scaled,
+             default.payment.next.month= as.numeric(cc_data_train$default.payment.next.month)) %>%
+  neuralnet(model.formula2,
+            data = .,
+            hidden = c(1), # liczba neuronów w warstwach ukrytych
+            linear.output = FALSE, # T dla regresji, F dla klasyfikacji
+            learningrate.limit = NULL,
+            learningrate.factor = list(minus = 0.5, plus = 1.2),
+            algorithm = "rprop+",
+            threshold = 0.01,
+            stepmax=1e+07)
+
+cc_data.nn_m9$result.matrix
+
+cc_data.nn_10 <- 
+  data.frame(cc_data_train_matrix_scaled,
+             default.payment.next.month= as.numeric(cc_data_train$default.payment.next.month)) %>%
+  neuralnet(model.formula2,
+            data = .,
+            hidden = c(10,3), # liczba neuronów w warstwach ukrytych
+            linear.output = FALSE, # T dla regresji, F dla klasyfikacji
+            learningrate.limit = NULL,
+            learningrate.factor = list(minus = 0.5, plus = 1.2),
+            algorithm = "rprop+",
+            threshold = 0.01,
+            stepmax=1e+07)
+
+cc_data.nn_m10$result.matrix
+
+#Warning message:
+#Algorithm did not converge in 1 of 1 repetition(s) within the stepmax. 
+# stepmax=1e7 - opcja do trenowania jezeli nie osiaga kryterium konwergencji
+
+
+#Choć nie istnieje jedna sztywna i uniwersalna reguła określająca właściwą liczbę warstw 
+#i neuronów sieci to powszechnie przyjęte są pewne reguły kciuka. Dla większości aplikacji 
+#zwykle wystarcza jedna wartswa ukryta (jeśli w ogóle jest potrzebna). Właściwa liczba neuronów 
+#waha sie między wymiarem warstwy wejściowej a wymiarem warstwy wyjściowej, zwykle ok. 2/3 warstwy wejściowej.
+#Nie gwarantuje to jednak w żaden sposób powodzenia w uczeniu sieci i skutecznej predykcji.
 
